@@ -9,7 +9,7 @@ images, labels = mndata.load_training()
 imageIndex = 11
 
 def changeArray():
-    myPrint = images[index]
+    myPrint = images[imageIndex]
 
     for x in range(len(myPrint)):
         val = myPrint[x]
@@ -19,8 +19,18 @@ def changeArray():
             myPrint[x] = '.'
 
 
+
+def squishArray():
+    myPrint = images[imageIndex]
+
+    for x in range(len(myPrint)):
+        # print("Before: ", myPrint[x])
+        myPrint[x] = myPrint[x] / 255
+        # print("After: ", myPrint[x])
+
+
 def myPrint():
-    show = images[index]
+    show = images[imageIndex]
 
     i = 0
     while (i < len(show)):
@@ -36,12 +46,14 @@ def myPrint():
 # images, labels = mndata.load_testing()
 
 def main():
-    print(mndata.display(images[index]))
-    print(labels[index])
+    print(mndata.display(images[imageIndex]))
+    print(labels[imageIndex])
 
-    changeArray()
-    # myPrint()
-    print(images[index])
+    # changeArray()
+    # squishArray()
+    myPrint()
+
+    print(images[imageIndex])
 
 
     print("work")
