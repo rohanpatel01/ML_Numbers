@@ -4,6 +4,8 @@ import os.path
 import mnist
 from mnist import MNIST
 import random
+import math
+
 
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
@@ -46,6 +48,10 @@ def seeNeuralNetworkVals():
     print("lenBias: ", lenBias)
 
 
+def normalizedXavierWeightInit(numNodesPrevLayer, numNodesCurrentLayer):
+    lower, upper = -(math.sqrt(6.0) / math.sqrt(numNodesPrevLayer + numNodesCurrentLayer)), (math.sqrt(6.0) / math.sqrt(numNodesPrevLayer + numNodesCurrentLayer))
+    return round(random.uniform(lower, upper), 2)
+
 
 mndata = MNIST('samples')
 images, labels = mndata.load_training()
@@ -72,24 +78,26 @@ hiddenLayer2 = np.array([getRandomVal01() for x in range(hiddenLayer2Len)])
 outputLayer = np.array([getRandomVal01() for x in range(outputLayerLen)])
 
 # weights of connections between each layer
-weightsInputLayer = np.array([[getRandomVal01() for col in range(inputLayerLen)] for row in range(hiddenLayer1Len)])
-weightsHiddenLayer1 = np.array([[getRandomVal01() for col in range(hiddenLayer1Len)] for row in range(hiddenLayer2Len)])
-weightsHiddenLayer2 = np.array([[getRandomVal01() for col in range(hiddenLayer2Len)] for row in range(outputLayerLen)])
+weightsInputLayer = np.array([[normalizedXavierWeightInit(inputLayerLen, hiddenLayer1Len) for col in range(inputLayerLen)] for row in range(hiddenLayer1Len)])
+weightsHiddenLayer1 = np.array([[normalizedXavierWeightInit(hiddenLayer1Len, hiddenLayer2Len) for col in range(hiddenLayer1Len)] for row in range(hiddenLayer2Len)])
+weightsHiddenLayer2 = np.array([[normalizedXavierWeightInit(hiddenLayer2Len, outputLayerLen) for col in range(hiddenLayer2Len)] for row in range(outputLayerLen)])
 
 # doesn't need to be np array itself b/c we will just be using this to hold the np arrays of the weights
 weightVector = [weightsInputLayer, weightsHiddenLayer1, weightsHiddenLayer2]
 
 numBiases = hiddenLayer1Len + hiddenLayer2Len + outputLayerLen
 
-biasVector = np.array([getRandomVal01() for x in range(numBiases)])
+# bias values can be initialized to 0 b/c asymmetry breaking is provided by the small random numbers in the weights
+biasVector = np.array([0 for x in range(numBiases)])
 
-print("Initialized Structure with random values")
+seeNeuralNetworkVals()
 
 
 def computeOutput():
-    print("Compute Output")
-
-
+    
+    # just work on computing one layer
+    # start with simpler system to make sure works then do with entire system
+    print("compute output")
 
 
 def main():
