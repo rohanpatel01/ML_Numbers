@@ -8,6 +8,17 @@ import random
 import math
 import copy
 
+"""
+TODO: Forward prop - add bias
+TODO: Forward prop - hand check values
+TODO: Forward prop - add sigmoid function
+TODO: Forward prop - hand check values again
+
+TODO: Forward prop - do with actual image and see output - won't know issues until after
+
+
+"""
+
 
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
@@ -32,44 +43,6 @@ def seeNeuralNetworkVals():
         print()
 
         print("------------------------------------------------------------")
-
-
-    ## see neurons
-    # print("Neurons")
-    # print("inputLayer: ", inputLayer.neurons)
-    # print()
-    # print("hiddenLayer1: ", hiddenLayer1.numNeurons)
-    # print()
-    # print("hiddenLayer2: ", hiddenLayer2.numNeurons)
-    # print()
-    # print("outputLayer: ", outputLayer.numNeurons)
-    # print()
-
-
-    # ## see weights and biases
-    # print("weightsInputLayer: ", weightsInputLayer)
-    # print()
-    # print("weightsHiddenLayer1: ", weightsHiddenLayer1)
-    # print()
-    # print("weightsHiddenLayer2: ", weightsHiddenLayer2)
-    # print()
-    # print("biasVector: ", biasVector)
-    # print()
-
-
-    # ## see other data
-    # lenInput = len(inputLayer)
-    # lenH1 = len(hiddenLayer1)
-    # lenH2 = len(hiddenLayer2)
-    # lenOut = len(outputLayer)
-    # lenBias = len(biasVector)
-
-    # print("lenInput: ", lenInput)
-    # print("lenH1: ", lenH1)
-    # print("lenH2: ", lenH2)
-    # print("lenOut: ", lenOut)
-    # print("lenBias: ", lenBias)
-
 
 
 
@@ -139,44 +112,30 @@ seeNeuralNetworkVals()
 
 
 
-def computeOutput():
+def forwardPropigation():
     
     # just work on computing one layer
     # start with simpler system to make sure works then do with entire system
     # do so iteratively for each layer of the NN
 
-    print("Compute Output")
+    print("ForwardPropigation")
+    print("Before forward prop")
+    seeNeuralNetworkVals()
 
     
-    # for i in range(numLayersNN - 1): # -1 b/c computing for new layers, excluding input layer
-    #     # print("weightVector[i]: ", weightVector[i])
-    #     # print("neuronVector[i]: ", neuronVector[i])
-
-    #     neuronVector[i + 1] = np.dot(weightVector[i], neuronVector[i])
-    #     print("dot product: ", np.dot(weightVector[i], neuronVector[i]))
-    #     # print("computeVector[i]: ", computeVector[i])
-    #     # print()
-
-    # print()
-    # print()
-    # print("------------------------------------------------------------")
-    # print("After")
-
-    # print("hiddenLayer1: ", hiddenLayer1)
-    # print()
-    # print("hiddenLayer2: ", hiddenLayer2)
-    # print()
-    # print("outputLayer: ", outputLayer)
-    # print()
+    for i in range(1, len(layers)): # -1 b/c computing for new layers, excluding input layer
+        layers[i].neurons = np.add(np.dot(layers[i].weights, layers[i].neurons), layers[i].biases) 
+        
+    print("After forward prop")
+    seeNeuralNetworkVals()
 
 
-    # print("After Compute")
-    # seeNeuralNetworkVals()
+    
 
 
     
 def main():
-    computeOutput()
+    forwardPropigation()
 
 main()
 
