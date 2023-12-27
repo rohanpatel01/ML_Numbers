@@ -9,13 +9,7 @@ import math
 import copy
 
 """
-TODO: Forward prop - add bias
-TODO: Forward prop - hand check values
-TODO: Forward prop - add sigmoid function
-TODO: Forward prop - hand check values again
-
 TODO: Forward prop - do with actual image and see output - won't know issues until after
-
 
 """
 
@@ -44,7 +38,8 @@ def seeNeuralNetworkVals():
 
         print("------------------------------------------------------------")
 
-
+def seeLastLayerOutput():
+    print("Last Layer: ", layers[-1].neurons)
 
 def normalizedXavierWeightInit(numNodesPrevLayer, numNodesCurrentLayer):
     lower, upper = -(math.sqrt(6.0) / math.sqrt(numNodesPrevLayer + numNodesCurrentLayer)), (math.sqrt(6.0) / math.sqrt(numNodesPrevLayer + numNodesCurrentLayer))
@@ -56,6 +51,7 @@ images, labels = mndata.load_training()
 numLayersNN = 4 # input, Hidden 1, Hidden 2, Output
 
 index = 0
+# ^^ Don't delete - for actual image
 # currentImage = images[index]
 # currentImageLabel = labels[index]
 
@@ -79,7 +75,8 @@ class Layer:
         
         self.biases = np.array([0 for x in range(numNeurons)])
 
-
+    def forwardPropigation(self):
+        self.neurons = sigmoid(np.matmul(self.weights, self.previousLayer.neurons) + self.biases)
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
@@ -88,12 +85,14 @@ hiddenLayer1Len = 2      # was 16
 hiddenLayer2Len = 2    # was 16
 outputLayerLen = 2     # was 10
 
+# ^^ Don't delete - for actual image
 # change data values from mnist (0-255) to our (0-1)
 # for x in range(inputLayerLen):
 #     currentImage[x] = currentImage[x] / 255
 
 
 # neurons at each layer - init vals remain 0 b/c their av is calculated not set to random
+# ^^ Don't delete - for actual image
 # inputLayer = np.array(currentImage)
 hiddenLayer1 = Layer(previousLayer=inputLayer, numNeurons=hiddenLayer1Len)
 hiddenLayer2 = Layer(previousLayer=hiddenLayer1, numNeurons=hiddenLayer2Len)
@@ -107,35 +106,15 @@ hiddenLayer2.weights = np.array([[normalizedXavierWeightInit(hiddenLayer1.numNeu
 outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeurons, outputLayer.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
 
 
-print("Before Compute")
-seeNeuralNetworkVals()
-
-
-
+# TODO: Compute new layer value as method within layers. then have this function just call that for all layers and print output to check
 def forwardPropigation():
-    
-    # just work on computing one layer
-    # start with simpler system to make sure works then do with entire system
-    # do so iteratively for each layer of the NN
-
-    print("ForwardPropigation")
-    print("Before forward prop")
-    seeNeuralNetworkVals()
-
-    
-    for i in range(1, len(layers)): # -1 b/c computing for new layers, excluding input layer
-        layers[i].neurons = np.add(np.dot(layers[i].weights, layers[i].neurons), layers[i].biases) 
-        
-    print("After forward prop")
-    seeNeuralNetworkVals()
-
-
-    
-
+    for layer in layers[1:]:
+        layer.forwardPropigation()
 
     
 def main():
     forwardPropigation()
+
 
 main()
 
