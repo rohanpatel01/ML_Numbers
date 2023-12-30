@@ -59,8 +59,6 @@ def seeNeuralNetworkVals():
 
     print("------------------------------------------------------------")
 
-
-
 def seeLastLayerOutput():
     print("Last Layer: ", layers[-1].neurons)
 
@@ -93,28 +91,30 @@ class Layer:
         if neurons is not None:
             self.neurons = neurons
         else:
-            self.neurons = np.array([0 for x in range(numNeurons)])
+            self.neurons = np.array([0.0 for x in range(numNeurons)])
 
         # to handle input layer not having weights b/c has no previous layer
         if not previousLayer:
             self.weights = None
+            self.gradient = None
         else:
             self.weights = np.array([[normalizedXavierWeightInit(previousLayer.numNeurons, numNeurons) for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
-        
-        self.biases = np.array([0 for x in range(numNeurons)])
+            self.gradient = np.array([[0.0 for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
+            
 
+        self.biases = np.array([0.0 for x in range(numNeurons)])
+
+        
 
     def forwardPropigation(self):
         # note: self.z is a vector not a single value. It holds the Z values for each neuron in the layer
-        self.z =  np.matmul(self.weights, self.previousLayer.neurons) + self.biases
+        self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
         self.neurons = sigmoid(self.z)
 
     def backPropigation(self):
         #^ note: each element in self.gradient represents the dC_dW (how much each weight should be changed)
-        self.gradient = np.array([[0 for col in range(self.previousLayer.numNeurons)] for row in range(self.numNeurons)])
+        
         # train same model vals with a batch of training examples, then take sum of all those to get actual cost function
-
-        # if output layer compute back prop manually else do other way
 
         # is ouput layer
         # todo: make sure to save cost so we can pass down to next layer
@@ -123,19 +123,26 @@ class Layer:
             for x in range(len(self.neurons)):
                 sumCost += math.pow(self.neurons[x] - expected[x], 2)
 
-            print("self.weights: ", self.weights)
 
             # for every neuron in current layer find how much to change each weight
-            for currentLayerNeuronIndex in range(len(self.neurons)):
+            #^^ don't delete b/c for actual full run
+            # for currentLayerNeuronIndex in range(len(self.neurons)):
                 
-                #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
+            #     #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
+            #     for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
+
+            #         prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
+            #         dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+            #         self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCostd
+
+            # ^^^^ Testing purposes just do first neuron in output layer
+            for currentLayerNeuronIndex in range(1):
+                
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
 
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCost
-        
-        
 
         pass
 
@@ -177,19 +184,32 @@ def forwardPropigation():
 
 def backPropigation():
     outputLayer = layers[-1]
+    print("output gradient: ", outputLayer.gradient)
     outputLayer.backPropigation()
+    print("output gradient after: ", outputLayer.gradient)
+
     
 def main():
-    # print("before")
-    # seeNeuralNetworkVals()
+   
     forwardPropigation()
-
+    print("before")
     seeNeuralNetworkVals()
 
-    # print("Expected: ", expected)
-    # print("Last layer neurons: ", layers[-1].neurons)
+    print("----------------------------------------------------------------------------------------------------------------")
+    print("----------------------------------------------------------------------------------------------------------------")
+    print("----------------------------------------------------------------------------------------------------------------")
 
-    # backPropigation()
+    print("Starting Back prop")
+    backPropigation()
+
+    print("----------------------------------------------------------------------------------------------------------------")
+    print("----------------------------------------------------------------------------------------------------------------")
+    print("----------------------------------------------------------------------------------------------------------------")
+
+    print("after")
+    seeNeuralNetworkVals()
+
+    
 
     
 
