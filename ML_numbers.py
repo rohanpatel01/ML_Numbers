@@ -58,16 +58,21 @@ index = 0
 
 class Layer:
 
-    def __init__(self, previousLayer: Type['Layer'], numNeurons, neurons = None) -> None:
-        self.previousLayer = previousLayer
+    # z = None
+
+    def __init__(self, numNeurons, previousLayer: Type['Layer'] = None, nextLayer: Type['Layer'] = None, neurons = None) -> None:
         self.numNeurons = numNeurons
 
-        # done to allow for input layer to manually write neuron values
+        self.previousLayer = previousLayer
+        self.nextLayer = nextLayer
+
+        # For other layers - input layer has default neurons, all other layers default to value of 0 b/c will be calculated
         if neurons is not None:
             self.neurons = neurons
         else:
             self.neurons = np.array([0 for x in range(numNeurons)])
 
+        # to handle input layer not having weights b/c has no previous layer
         if not previousLayer:
             self.weights = None
         else:
@@ -75,8 +80,26 @@ class Layer:
         
         self.biases = np.array([0 for x in range(numNeurons)])
 
+
     def forwardPropigation(self):
-        self.neurons = sigmoid(np.matmul(self.weights, self.previousLayer.neurons) + self.biases)
+        self.z =  np.matmul(self.weights, self.previousLayer.neurons) + self.biases
+        self.neurons = sigmoid(self.z)
+
+    def backPropigation(self):
+        
+        print("z in back prop: ", self.z)
+
+        # calculate w/b or a(l-1) first?
+
+        # train same model vals with a batch of training examples, then take sum of all those to get actual cost function
+
+        """ This means we can calculate all weights in this hidden 
+        layer the same way as we did in the last layer with the 
+        only difference that we use already calculated data from 
+        the previous layer instead of the derivative of the cost 
+        function."""
+
+        pass
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
@@ -114,7 +137,11 @@ def forwardPropigation():
     
 def main():
     forwardPropigation()
-
+    # layers[1].forwardPropigation()
+    # print("After forward: ", layers[1].z)
+    layers[1].backPropigation()
+    # print("After back: ", layers[1].z)
+    # backPropigation()
 
 main()
 
