@@ -135,7 +135,7 @@ class Layer:
             #         dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
             #         self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCostd
 
-            # ^^^^ Testing purposes just do first neuron in output layer
+            # ^^^^ Testing purposes just do first neuron in output layer - correct
             for currentLayerNeuronIndex in range(1):
                 
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
@@ -143,6 +143,7 @@ class Layer:
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCost
+
 
         pass
 
@@ -208,6 +209,8 @@ def main():
 
     print("after")
     seeNeuralNetworkVals()
+    print("final gradient: ", outputLayer.gradient)
+
 
     
 
