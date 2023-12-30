@@ -121,31 +121,21 @@ class Layer:
         if not self.nextLayer:
             sumCost = 0
             for x in range(len(self.neurons)):
-                sumCost += math.pow(self.neurons[x] - expected[x], 2)
+                sumCost += 2 * (self.neurons[x] - expected[x])
 
-
+            print("sumCost: ", sumCost)
             # for every neuron in current layer find how much to change each weight
             #^^ don't delete b/c for actual full run
-            # for currentLayerNeuronIndex in range(len(self.neurons)):
+            for currentLayerNeuronIndex in range(len(self.neurons)):
                 
-            #     #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
-            #     for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
-
-            #         prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
-            #         dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-            #         self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCostd
-
-            # ^^^^ Testing purposes just do first neuron in output layer - correct
-            for currentLayerNeuronIndex in range(1):
-                
+                #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
 
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCost
 
-
-        pass
+                    
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
