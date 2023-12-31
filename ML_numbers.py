@@ -130,6 +130,7 @@ class Layer:
             for x in range(len(self.neurons)):
                 sumCost += 2 * (self.neurons[x] - expected[x])
 
+
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 
                 #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
@@ -137,6 +138,13 @@ class Layer:
 
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+                    print("prevLayerNeuronOutput: ", prevLayerNeuronOutput)
+                    print("ZL: ", self.z[currentLayerNeuronIndex])
+                    print("dSigmoid_ZCurrent: ", dSigmoid_ZCurrent)
+                    print("sum cost: ", sumCost)
+                    print("gradient value: ", prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)
+                    print("----------------------------------------------------------------------------------------------------------------")
+                    
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
             self.dC_dAL = sumCost       # this is the value we pass back to the next layer in back prop (or L - 1)
@@ -159,6 +167,7 @@ class Layer:
                     # TODO: possible misunderstanding - ask andrew for clarification. we are simply using the value for dC_dAL from the previous layer in back prop (actually next layer)
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
+            # TODO: self.dC_dAL = ____ << what do I put here? b/c calculate differently for each layer so what do we pass down to next layer?
 
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
@@ -231,9 +240,9 @@ def main():
     # print("Starting Back prop")
     backPropigation()
 
-    print("----------------------------------------------------------------------------------------------------------------")
-    print("----------------------------------------------------------------------------------------------------------------")
-    print("----------------------------------------------------------------------------------------------------------------")
+    # print("----------------------------------------------------------------------------------------------------------------")
+    # print("----------------------------------------------------------------------------------------------------------------")
+    # print("----------------------------------------------------------------------------------------------------------------")
 
     print("after")
     seeNeuralNetworkVals()
