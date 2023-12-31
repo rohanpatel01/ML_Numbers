@@ -10,8 +10,6 @@ import copy
 
 """
 TODO: Back prop
-TODO: fix: each neuron contains a z not a layer so self.z doesn't make sense, would need to make an array similar to "neurons"
-
 
 """
 
@@ -30,6 +28,9 @@ def seeNeuralNetworkVals():
     print("Weights Hidden Layer 1: ", end="")
     print(layers[1].weights)
 
+    print("Gradient Hidden Layer 1: ", end="")
+    print(layers[1].gradient)
+
     print("Neurons Hidden Layer 1: ")
     print(layers[1].neurons)
 
@@ -39,16 +40,22 @@ def seeNeuralNetworkVals():
     print("Weights Hidden Layer 2: ", end="")
     print(layers[2].weights)
 
+    print("Gradient Hidden Layer 2: ", end="")
+    print(layers[2].gradient)
+
     print("Neurons Hidden Layer 2: ")
     print(layers[2].neurons)
 
     print("------------------------------------------")
     print("------------------------------------------")
     
-    print("Weights Output Layer 2:", end="")
+    print("Weights Output Layer:", end="")
     print(layers[3].weights)
 
-    print("Neurons Output Layer 1: ")
+    print("Gradient Output Layer: ", end="")
+    print(layers[3].gradient)
+
+    print("Neurons Output Layer: ")
     print(layers[3].neurons)
 
     print("------------------------------------------")
@@ -98,6 +105,7 @@ class Layer:
             self.weights = None
             self.gradient = None
         else:
+            # TODO: make sure below line of code is necessary - might not be b/c already have weights being initialized by xavier
             self.weights = np.array([[normalizedXavierWeightInit(previousLayer.numNeurons, numNeurons) for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
             self.gradient = np.array([[0.0 for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
             
@@ -111,31 +119,47 @@ class Layer:
         self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
         self.neurons = sigmoid(self.z)
 
+
+
     def backPropigation(self):
-        #^ note: each element in self.gradient represents the dC_dW (how much each weight should be changed)
         
         # train same model vals with a batch of training examples, then take sum of all those to get actual cost function
 
-        # is ouput layer
-        # todo: make sure to save cost so we can pass down to next layer
         if not self.nextLayer:
-            sumCost = 0
+            sumCost = 0.0
             for x in range(len(self.neurons)):
                 sumCost += 2 * (self.neurons[x] - expected[x])
 
-            print("sumCost: ", sumCost)
-            # for every neuron in current layer find how much to change each weight
-            #^^ don't delete b/c for actual full run
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 
                 #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
 
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
-                    dSigmoid_ZL = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZL * sumCost
+                    dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
-                    
+            self.dC_dAL = sumCost       # this is the value we pass back to the next layer in back prop (or L - 1)
+
+        else: # layer is a hidden layer
+            
+            for currentLayerNeuronIndex in range(len(self.neurons)):
+                for prevLayerWeightIndex in range(len(self.previousLayer.neurons)): # this is how many weights per neuron in this layer
+
+                    prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
+                    dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+
+                    sumCost = 0.0
+                    # sum the influence of current neuron's activation on cost: dC_dAL-1 (hidden layer)
+                    for nextLayerNeuronIndex in range(len(self.nextLayer.neurons)):
+                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex]
+                        dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex])
+                        sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL
+
+                    # TODO: possible misunderstanding - ask andrew for clarification. we are simply using the value for dC_dAL from the previous layer in back prop (actually next layer)
+                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
+
+
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
@@ -157,12 +181,24 @@ hiddenLayer1 = Layer(previousLayer=inputLayer, numNeurons=hiddenLayer1Len)
 hiddenLayer2 = Layer(previousLayer=hiddenLayer1, numNeurons=hiddenLayer2Len)
 outputLayer = Layer(previousLayer=hiddenLayer2, numNeurons=outputLayerLen)
 
+# for testing
+
 layers = [inputLayer, hiddenLayer1, hiddenLayer2, outputLayer]
 
 inputLayer.weights = None
-hiddenLayer1.weights = np.array([[normalizedXavierWeightInit(inputLayer.numNeurons, hiddenLayer1.numNeurons) for col in range(inputLayer.numNeurons)] for row in range(hiddenLayer1.numNeurons)])
-hiddenLayer2.weights = np.array([[normalizedXavierWeightInit(hiddenLayer1.numNeurons, hiddenLayer2.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
-outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeurons, outputLayer.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
+#^^ DO NOT DELETE - for actual 
+# hiddenLayer1.weights = np.array([[normalizedXavierWeightInit(inputLayer.numNeurons, hiddenLayer1.numNeurons) for col in range(inputLayer.numNeurons)] for row in range(hiddenLayer1.numNeurons)])
+# hiddenLayer2.weights = np.array([[normalizedXavierWeightInit(hiddenLayer1.numNeurons, hiddenLayer2.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
+# outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeurons, outputLayer.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
+
+# for test - manually forcing values / environment that would be seen after forward propigation
+# hiddenLayer1.neurons = np.array([0.35663485, 0.30767744])
+# hiddenLayer2.neurons = np.array([[0.52180225, 0.41313151]])
+# outputLayer.neurons = np.array([[0.61935516, 0.30040983]])
+
+hiddenLayer1.weights = np.array([[ 0.36, -0.57, -0.59],[-0.78, -0.58, -0.41]])
+hiddenLayer2.weights = np.array([[ -0.48,  0.84],[-0.32, -0.77]])
+outputLayer.weights = np.array([[ 0.64,  0.37],[-1.05, -0.72]])
 
 # for testing - change expected to match label for image
 expected = [0] * len(outputLayer.neurons)
@@ -174,23 +210,25 @@ def forwardPropigation():
         layer.forwardPropigation()
 
 def backPropigation():
-    outputLayer = layers[-1]
-    print("output gradient: ", outputLayer.gradient)
-    outputLayer.backPropigation()
-    print("output gradient after: ", outputLayer.gradient)
+
+    # for x in range(len(layers) - 1, 0, -1):
+    #     layers[x].backPropigation()
+
+    layers[-1].backPropigation()
+
 
     
 def main():
    
     forwardPropigation()
-    print("before")
-    seeNeuralNetworkVals()
+    # print("before")
+    # seeNeuralNetworkVals()
 
-    print("----------------------------------------------------------------------------------------------------------------")
-    print("----------------------------------------------------------------------------------------------------------------")
-    print("----------------------------------------------------------------------------------------------------------------")
+    # print("----------------------------------------------------------------------------------------------------------------")
+    # print("----------------------------------------------------------------------------------------------------------------")
+    # print("----------------------------------------------------------------------------------------------------------------")
 
-    print("Starting Back prop")
+    # print("Starting Back prop")
     backPropigation()
 
     print("----------------------------------------------------------------------------------------------------------------")
@@ -199,7 +237,7 @@ def main():
 
     print("after")
     seeNeuralNetworkVals()
-    print("final gradient: ", outputLayer.gradient)
+    # print("final gradient: ", outputLayer.gradient)
 
 
     
