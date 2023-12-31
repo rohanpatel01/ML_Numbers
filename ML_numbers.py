@@ -160,13 +160,14 @@ class Layer:
                     sumCost = 0.0
                     # sum the influence of current neuron's activation on cost: dC_dAL-1 (hidden layer)
                     for nextLayerNeuronIndex in range(len(self.nextLayer.neurons)):
-                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex]
+                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex] #^^ ****
                         dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex])
                         sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL
 
                     # TODO: possible misunderstanding - ask andrew for clarification. we are simply using the value for dC_dAL from the previous layer in back prop (actually next layer)
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
+                print("self.dC_dAL: ", sumCost)
             # TODO: self.dC_dAL = ____ << what do I put here? b/c calculate differently for each layer so what do we pass down to next layer?
 
 
@@ -223,7 +224,7 @@ def backPropigation():
     # for x in range(len(layers) - 1, 0, -1):
     #     layers[x].backPropigation()
 
-    layers[-1].backPropigation()
+    layers[-2].backPropigation()
 
 
     
