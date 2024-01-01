@@ -175,7 +175,7 @@ class Layer:
         else: # layer is a hidden layer
             print("other")
 
-            # self.dC_dAL = np.array([0.0] * self.numNeurons)
+            self.dC_dAL = np.array([0.0] * self.numNeurons)
 
             #^ DONT DELETE FOR ACTUAL   
             for currentLayerNeuronIndex in range(len(self.neurons)):
@@ -184,27 +184,28 @@ class Layer:
             # for currentLayerNeuronIndex in range(1):
             #     for prevLayerWeightIndex in range(1):
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
-                    print("prevLayerNeuronOutput: ", prevLayerNeuronOutput)
+                    # print("prevLayerNeuronOutput: ", prevLayerNeuronOutput)
 
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                    print("dSigmoid_ZCurrent: ", dSigmoid_ZCurrent)
+                    # print("dSigmoid_ZCurrent: ", dSigmoid_ZCurrent)
 
                     sumCost = 0.0
                     # sum the influence of current neuron's activation on cost: dC_dAL-1 (hidden layer)
                     for nextLayerNeuronIndex in range(len(self.nextLayer.neurons)):
-                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex] #^^ ****
+                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex]
                         dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex])
-                        sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL
+                        sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL[nextLayerNeuronIndex]     # was self.nextLayer.dC_dAL
+                        
+                    
+                        # print("nextLayerWeightForCurrentNeuron: ", nextLayerWeightForCurrentNeuron)
+                        # print("dSigmoid_ZNext: ", dSigmoid_ZNext)
+                        # print("self.nextLayer.dC_dAL[nextLayerNeuronIndex]: ", self.nextLayer.dC_dAL[nextLayerNeuronIndex])
+                    self.dC_dAL[currentLayerNeuronIndex] = sumCost
+                    
+                    print("sumCost per neuron: ", sumCost)
+                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
 
-                    print("self.dC_dAL: ", sumCost)
-                    # store the self.dC_dAL in an array for each neuron in current layer
-
-                    # TODO: possible misunderstanding - ask andrew for clarification. we are simply using the value for dC_dAL from the previous layer in back prop (actually next layer)
-                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
-
-                
-            # TODO: self.dC_dAL = ____ << what do I put here? b/c calculate differently for each layer so what do we pass down to next layer?
-
+            print("Hidden layer self.dC_dAL: ", self.dC_dAL)
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
@@ -261,10 +262,13 @@ def forwardPropigation():
 
 def backPropigation():
 
-    # for x in range(len(layers) - 1, 0, -1):
-    #     layers[x].backPropigation()
-    layers[-1].backPropigation()
+    for x in range(len(layers) - 1, 0, -1):
+        layers[x].backPropigation()
+    # layers[-1].backPropigation()
     # layers[-2].backPropigation()
+    # layers[-3].backPropigation()
+
+
 
 
 
