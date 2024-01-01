@@ -188,7 +188,7 @@ class Layer:
                         sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL
 
                     print("self.dC_dAL: ", sumCost)
-                    # store the self.dC_dAL in an array for each neuron
+                    # store the self.dC_dAL in an array for each neuron in current layer
 
                     # TODO: possible misunderstanding - ask andrew for clarification. we are simply using the value for dC_dAL from the previous layer in back prop (actually next layer)
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
