@@ -31,17 +31,17 @@ def getRandomVal01():
 
 def seeNeuralNetworkVals():
 
-    print("Weights Hidden Layer 1: ", end="")
-    print(layers[1].weights)
+    print("Weights Output Layer:", end="")
+    print(layers[3].weights)
 
-    print("Gradient Hidden Layer 1: ", end="")
-    print(layers[1].gradient)
+    print("Gradient Output Layer: ", end="")
+    print(layers[3].gradient)
 
-    print("Z Hidden Layer 1: ", end="")
-    print(layers[1].z)
+    print("Z Output Layer: ", end="")
+    print(layers[3].z)
 
-    print("Neurons Hidden Layer 1: ")
-    print(layers[1].neurons)
+    print("Neurons Output Layer: ")
+    print(layers[3].neurons)
 
     print("------------------------------------------")
     print("------------------------------------------")
@@ -60,18 +60,18 @@ def seeNeuralNetworkVals():
 
     print("------------------------------------------")
     print("------------------------------------------")
-    
-    print("Weights Output Layer:", end="")
-    print(layers[3].weights)
 
-    print("Gradient Output Layer: ", end="")
-    print(layers[3].gradient)
+    print("Weights Hidden Layer 1: ", end="")
+    print(layers[1].weights)
 
-    print("Z Output Layer: ", end="")
-    print(layers[3].z)
+    print("Gradient Hidden Layer 1: ", end="")
+    print(layers[1].gradient)
 
-    print("Neurons Output Layer: ")
-    print(layers[3].neurons)
+    print("Z Hidden Layer 1: ", end="")
+    print(layers[1].z)
+
+    print("Neurons Hidden Layer 1: ")
+    print(layers[1].neurons)
 
     print("------------------------------------------")
     print("------------------------------------------")
@@ -154,26 +154,13 @@ class Layer:
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
 
                     sumCost = 0.0
-                    # for x in range(len(self.neurons)):
                     sumCost += (2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
-                    # print("output layer sumcost: ", sumCost, " for neuron index: ", currentLayerNeuronIndex)
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                    # print("prevLayerNeuronOutput: ", prevLayerNeuronOutput)
-                    # print("ZL: ", self.z[currentLayerNeuronIndex])
-                    # print("dSigmoid_ZCurrent: ", dSigmoid_ZCurrent)
-                    # print("sum cost: ", sumCost)
-                    # print("gradient value: ", prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)
-                    # print("----------------------------------------------------------------------------------------------------------------")
-                    
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
-            # print("Cost Hidden Layer 1: ", end="")
-            # print(self.dC_dAL)
-
-        else: # layer is a hidden layer
-            print("other")
+        else:
 
             self.dC_dAL = np.array([0.0] * self.numNeurons)
 
@@ -181,13 +168,8 @@ class Layer:
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)): # this is how many weights per neuron in this layer
 
-            # for currentLayerNeuronIndex in range(1):
-            #     for prevLayerWeightIndex in range(1):
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
-                    # print("prevLayerNeuronOutput: ", prevLayerNeuronOutput)
-
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                    # print("dSigmoid_ZCurrent: ", dSigmoid_ZCurrent)
 
                     sumCost = 0.0
                     # sum the influence of current neuron's activation on cost: dC_dAL-1 (hidden layer)
@@ -196,16 +178,10 @@ class Layer:
                         dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex])
                         sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL[nextLayerNeuronIndex]     # was self.nextLayer.dC_dAL
                         
-                    
-                        # print("nextLayerWeightForCurrentNeuron: ", nextLayerWeightForCurrentNeuron)
-                        # print("dSigmoid_ZNext: ", dSigmoid_ZNext)
-                        # print("self.nextLayer.dC_dAL[nextLayerNeuronIndex]: ", self.nextLayer.dC_dAL[nextLayerNeuronIndex])
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     
-                    print("sumCost per neuron: ", sumCost)
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
 
-            print("Hidden layer self.dC_dAL: ", self.dC_dAL)
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
@@ -264,42 +240,17 @@ def backPropigation():
 
     for x in range(len(layers) - 1, 0, -1):
         layers[x].backPropigation()
-    # layers[-1].backPropigation()
-    # layers[-2].backPropigation()
-    # layers[-3].backPropigation()
-
-
-
-
 
 
     
 def main():
    
     forwardPropigation()
-    # print("before")
-    # seeNeuralNetworkVals()
-
-    # print("----------------------------------------------------------------------------------------------------------------")
-    # print("----------------------------------------------------------------------------------------------------------------")
-    # print("----------------------------------------------------------------------------------------------------------------")
-
-    # print("Starting Back prop")
     backPropigation()
-
-    # print("----------------------------------------------------------------------------------------------------------------")
-    # print("----------------------------------------------------------------------------------------------------------------")
-    # print("----------------------------------------------------------------------------------------------------------------")
-
-    print("after")
     seeNeuralNetworkVals()
-    # print("final gradient: ", outputLayer.gradient)
 
 
     
-
-    
-
 main()
 
 
