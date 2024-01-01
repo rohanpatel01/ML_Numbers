@@ -31,6 +31,9 @@ def seeNeuralNetworkVals():
     print("Gradient Hidden Layer 1: ", end="")
     print(layers[1].gradient)
 
+    print("Z Hidden Layer 1: ", end="")
+    print(layers[1].z)
+
     print("Neurons Hidden Layer 1: ")
     print(layers[1].neurons)
 
@@ -43,6 +46,9 @@ def seeNeuralNetworkVals():
     print("Gradient Hidden Layer 2: ", end="")
     print(layers[2].gradient)
 
+    print("Z Hidden Layer 2: ", end="")
+    print(layers[2].z)
+
     print("Neurons Hidden Layer 2: ")
     print(layers[2].neurons)
 
@@ -54,6 +60,9 @@ def seeNeuralNetworkVals():
 
     print("Gradient Output Layer: ", end="")
     print(layers[3].gradient)
+
+    print("Z Output Layer: ", end="")
+    print(layers[3].z)
 
     print("Neurons Output Layer: ")
     print(layers[3].neurons)
@@ -126,11 +135,17 @@ class Layer:
         # train same model vals with a batch of training examples, then take sum of all those to get actual cost function
 
         if not self.nextLayer:
+
+            print("self.nextLayer: ", self.nextLayer)
+
+            print("Current neurons: ", self.neurons)
+            print("Expected neurons: ", expected)
+
             sumCost = 0.0
             for x in range(len(self.neurons)):
-                sumCost += 2 * (self.neurons[x] - expected[x])
+                sumCost += (2 * (self.neurons[x] - expected[x]))
 
-
+            print("Last layer sum cost: ", sumCost)
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 
                 #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
@@ -150,7 +165,8 @@ class Layer:
             self.dC_dAL = sumCost       # this is the value we pass back to the next layer in back prop (or L - 1)
 
         else: # layer is a hidden layer
-            
+            print("other")
+
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)): # this is how many weights per neuron in this layer
 
@@ -164,10 +180,12 @@ class Layer:
                         dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex])
                         sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL
 
+                    print("self.dC_dAL: ", sumCost)
+
                     # TODO: possible misunderstanding - ask andrew for clarification. we are simply using the value for dC_dAL from the previous layer in back prop (actually next layer)
                     self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
-                print("self.dC_dAL: ", sumCost)
+                
             # TODO: self.dC_dAL = ____ << what do I put here? b/c calculate differently for each layer so what do we pass down to next layer?
 
 
@@ -190,6 +208,11 @@ outputLayerLen = 2     # was 10
 hiddenLayer1 = Layer(previousLayer=inputLayer, numNeurons=hiddenLayer1Len)
 hiddenLayer2 = Layer(previousLayer=hiddenLayer1, numNeurons=hiddenLayer2Len)
 outputLayer = Layer(previousLayer=hiddenLayer2, numNeurons=outputLayerLen)
+
+# do this after b/c cannot do in initialization b/c not delcared
+hiddenLayer1.nextLayer = hiddenLayer2
+hiddenLayer2.nextLayer = outputLayer
+outputLayer.nextLayer = None
 
 # for testing
 
