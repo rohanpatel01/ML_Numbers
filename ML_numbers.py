@@ -160,13 +160,13 @@ class Layer:
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
 
                 
                 # calculate gradient for bias
                 dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 sumCost_bias = float(2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
-                self.gradient_bias[currentLayerNeuronIndex] = dSigmoid_ZCurrent_for_bias * sumCost_bias
+                self.gradient_bias[currentLayerNeuronIndex] += dSigmoid_ZCurrent_for_bias * sumCost_bias
 
 
         else:
@@ -188,12 +188,12 @@ class Layer:
                         
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
 
                 # find bias for each neuron in hidden layer
                 dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 costCurrentNeuron = self.dC_dAL[currentLayerNeuronIndex]
-                self.gradient_bias[currentLayerNeuronIndex] = dSigmoid_ZCurrent_for_bias * costCurrentNeuron
+                self.gradient_bias[currentLayerNeuronIndex] += dSigmoid_ZCurrent_for_bias * costCurrentNeuron
 
                 
 #^^ For testing
@@ -267,6 +267,11 @@ def backPropigation():
     
 def main():
    
+
+    # TODO: Implement batch processing, keep doing backprop but only update the values after done with a batch
+    # TODO: learning rate
+    # TODO: new weight = old weight - cost
+    #^^^ If doesn't give convergence try adding
     forwardPropigation()
     backPropigation()
     seeNeuralNetworkVals()
