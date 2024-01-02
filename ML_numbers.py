@@ -34,8 +34,11 @@ def seeNeuralNetworkVals():
     print("Weights Output Layer:", end="")
     print(layers[3].weights)
 
-    print("Gradient Output Layer: ", end="")
-    print(layers[3].gradient)
+    print("gradient_weight Output Layer: ", end="")
+    print(layers[3].gradient_weight)
+
+    print("gradient_bias Output Layer: ", end="")
+    print(layers[3].gradient_bias)
 
     print("Z Output Layer: ", end="")
     print(layers[3].z)
@@ -49,8 +52,11 @@ def seeNeuralNetworkVals():
     print("Weights Hidden Layer 2: ", end="")
     print(layers[2].weights)
 
-    print("Gradient Hidden Layer 2: ", end="")
-    print(layers[2].gradient)
+    print("gradient_weight Hidden Layer 2: ", end="")
+    print(layers[2].gradient_weight)
+
+    print("gradient_bias Hidden Layer 2: ", end="")
+    print(layers[2].gradient_bias)
 
     print("Z Hidden Layer 2: ", end="")
     print(layers[2].z)
@@ -64,8 +70,11 @@ def seeNeuralNetworkVals():
     print("Weights Hidden Layer 1: ", end="")
     print(layers[1].weights)
 
-    print("Gradient Hidden Layer 1: ", end="")
-    print(layers[1].gradient)
+    print("gradient_weight Hidden Layer 1: ", end="")
+    print(layers[1].gradient_weight)
+
+    print("gradient_bias Hidden Layer 1: ", end="")
+    print(layers[1].gradient_bias)
 
     print("Z Hidden Layer 1: ", end="")
     print(layers[1].z)
@@ -118,12 +127,13 @@ class Layer:
         # to handle input layer not having weights b/c has no previous layer
         if not previousLayer:
             self.weights = None
-            self.gradient = None
+            self.gradient_weight = None
+            self.gradient_bias = None
         else:
             # TODO: make sure below line of code is necessary - might not be b/c already have weights being initialized by xavier
             self.weights = np.array([[normalizedXavierWeightInit(previousLayer.numNeurons, numNeurons) for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
-            self.gradient = np.array([[0.0 for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
-            
+            self.gradient_weight = np.array([[0.0 for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
+            self.gradient_bias = np.array([0.0] * numNeurons)
 
         self.biases = np.array([0.0 for x in range(numNeurons)])
 
@@ -146,6 +156,11 @@ class Layer:
 
             # print("Current neurons: ", self.neurons)
             # print("Expected neurons: ", expected)
+
+
+            
+
+            # calculate gradient for weight
             self.dC_dAL = np.array([0.0] * self.numNeurons) 
 
             for currentLayerNeuronIndex in range(len(self.neurons)):
@@ -153,12 +168,20 @@ class Layer:
                 #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
 
-                    sumCost = 0.0
-                    sumCost += (2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
+                    # sumCost = 0.0
+                    sumCost = float((2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))) # changed to = from += 
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
+                    
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
+
+                
+                # calculate gradient for bias
+                dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+                sumCost_bias = float(2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
+                self.gradient_bias[currentLayerNeuronIndex] = dSigmoid_ZCurrent_for_bias * sumCost_bias
+
 
         else:
 
@@ -180,8 +203,14 @@ class Layer:
                         
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     
-                    self.gradient[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] = prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
 
+                # find bias for each neuron in hidden layer
+                dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+                costCurrentNeuron = self.dC_dAL[currentLayerNeuronIndex]
+                self.gradient_bias[currentLayerNeuronIndex] = dSigmoid_ZCurrent_for_bias * costCurrentNeuron
+
+                
 
 inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
