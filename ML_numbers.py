@@ -152,14 +152,6 @@ class Layer:
 
         if not self.nextLayer:
 
-            # print("self.nextLayer: ", self.nextLayer)
-
-            # print("Current neurons: ", self.neurons)
-            # print("Expected neurons: ", expected)
-
-
-            
-
             # calculate gradient for weight
             self.dC_dAL = np.array([0.0] * self.numNeurons) 
 
@@ -184,10 +176,9 @@ class Layer:
 
 
         else:
-
+            # calculate gradient for weight
             self.dC_dAL = np.array([0.0] * self.numNeurons)
 
-            #^ DONT DELETE FOR ACTUAL   
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)): # this is how many weights per neuron in this layer
 
