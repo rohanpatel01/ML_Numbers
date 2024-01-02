@@ -1,19 +1,15 @@
 import numpy as np
-import pickle
-import os.path
+# import pickle
+# import os.path
 import mnist
 from mnist import MNIST
 from typing import Type
 import random
 import math
-import copy
+# import copy
 
 """
-TODO: Back prop
 
-implement saving feature for dC/dAL and dC/dZL for current layer
-make sure to use it correctly during back prop by grabbing correct value when looking at each neuron
-hand check values
 plug in images and all other real parts - make sure working / no errors
 start training algorithm and test if works
 
@@ -100,17 +96,15 @@ def normalizedXavierWeightInit(numNodesPrevLayer, numNodesCurrentLayer):
 
 mndata = MNIST('samples')
 images, labels = mndata.load_training()
-numLayersNN = 4 # input, Hidden 1, Hidden 2, Output
 
 index = 0
 # ^^ Don't delete - for actual image
-# currentImage = images[index]
-# currentImageLabel = labels[index]
+currentImage = images[index]
+currentImageLabel = labels[index]
 
+print("label data: ", currentImageLabel)
 
 class Layer:
-
-    # z = None
 
     def __init__(self, numNeurons, previousLayer: Type['Layer'] = None, nextLayer: Type['Layer'] = None, neurons = None) -> None:
         self.numNeurons = numNeurons
@@ -125,12 +119,12 @@ class Layer:
             self.neurons = np.array([0.0 for x in range(numNeurons)])
 
         # to handle input layer not having weights b/c has no previous layer
-        if not previousLayer:
+        if previousLayer is None:
             self.weights = None
             self.gradient_weight = None
             self.gradient_bias = None
         else:
-            # TODO: make sure below line of code is necessary - might not be b/c already have weights being initialized by xavier
+
             self.weights = np.array([[normalizedXavierWeightInit(previousLayer.numNeurons, numNeurons) for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
             self.gradient_weight = np.array([[0.0 for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
             self.gradient_bias = np.array([0.0] * numNeurons)
@@ -202,54 +196,62 @@ class Layer:
                 self.gradient_bias[currentLayerNeuronIndex] = dSigmoid_ZCurrent_for_bias * costCurrentNeuron
 
                 
+#^^ For testing
+# inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
-inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
-inputLayerLen = inputLayer.numNeurons        # was len(currentImage)
-hiddenLayer1Len = 2      # was 16
-hiddenLayer2Len = 2    # was 16
-outputLayerLen = 2     # was 10
+inputLayerLen = len(currentImage)       # was inputLayer.numNeurons 
+hiddenLayer1Len = 16      # was 16
+hiddenLayer2Len = 16    # was 16
+outputLayerLen = 10     # was 10
 
 # ^^ Don't delete - for actual image
 # change data values from mnist (0-255) to our (0-1)
-# for x in range(inputLayerLen):
-#     currentImage[x] = currentImage[x] / 255
+for x in range(inputLayerLen):
+    currentImage[x] = currentImage[x] / 255
 
 
 # neurons at each layer - init vals remain 0 b/c their av is calculated not set to random
 # ^^ Don't delete - for actual image
-# inputLayer = np.array(currentImage)
+# inputLayer = np.array(currentImage, previousLayer= None)     #^^ make sure this is correct
+
+inputLayer = Layer(numNeurons=len(currentImage), neurons=currentImage)
 hiddenLayer1 = Layer(previousLayer=inputLayer, numNeurons=hiddenLayer1Len)
 hiddenLayer2 = Layer(previousLayer=hiddenLayer1, numNeurons=hiddenLayer2Len)
 outputLayer = Layer(previousLayer=hiddenLayer2, numNeurons=outputLayerLen)
 
 # do this after b/c cannot do in initialization b/c not delcared
+inputLayer.nextLayer = hiddenLayer1
 hiddenLayer1.nextLayer = hiddenLayer2
 hiddenLayer2.nextLayer = outputLayer
 outputLayer.nextLayer = None
 
-# for testing
-
 layers = [inputLayer, hiddenLayer1, hiddenLayer2, outputLayer]
 
-inputLayer.weights = None
 #^^ DO NOT DELETE - for actual 
-# hiddenLayer1.weights = np.array([[normalizedXavierWeightInit(inputLayer.numNeurons, hiddenLayer1.numNeurons) for col in range(inputLayer.numNeurons)] for row in range(hiddenLayer1.numNeurons)])
-# hiddenLayer2.weights = np.array([[normalizedXavierWeightInit(hiddenLayer1.numNeurons, hiddenLayer2.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
-# outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeurons, outputLayer.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
+inputLayer.weights = None
+hiddenLayer1.weights = np.array([[normalizedXavierWeightInit(inputLayer.numNeurons, hiddenLayer1.numNeurons) for col in range(inputLayer.numNeurons)] for row in range(hiddenLayer1.numNeurons)])
+hiddenLayer2.weights = np.array([[normalizedXavierWeightInit(hiddenLayer1.numNeurons, hiddenLayer2.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
+outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeurons, outputLayer.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
 
 # for test - manually forcing values / environment that would be seen after forward propigation
 # hiddenLayer1.neurons = np.array([0.35663485, 0.30767744])
 # hiddenLayer2.neurons = np.array([[0.52180225, 0.41313151]])
 # outputLayer.neurons = np.array([[0.61935516, 0.30040983]])
 
-hiddenLayer1.weights = np.array([[ 0.36, -0.57, -0.59],[-0.78, -0.58, -0.41]])
-hiddenLayer2.weights = np.array([[ -0.48,  0.84],[-0.32, -0.77]])
-outputLayer.weights = np.array([[ 0.64,  0.37],[-1.05, -0.72]])
+#^ For testing
+# hiddenLayer1.weights = np.array([[ 0.36, -0.57, -0.59],[-0.78, -0.58, -0.41]])
+# hiddenLayer2.weights = np.array([[ -0.48,  0.84],[-0.32, -0.77]])
+# outputLayer.weights = np.array([[ 0.64,  0.37],[-1.05, -0.72]])
 
-# for testing - change expected to match label for image
-expected = [0] * len(outputLayer.neurons)
-expected[0] = 1  # for test: expected will be first neuron to be 1 and all others to be 0
+#^ for testing
+# expected = [0.0] * len(outputLayer.neurons)
+# expected[0] = 1  # for test: expected will be first neuron to be 1 and all others to be 0
+
+expected = [0.0] * len(outputLayer.neurons)
+
+expected[currentImageLabel] = 1.0
+
 
 # TODO: Compute new layer value as method within layers. then have this function just call that for all layers and print output to check
 def forwardPropigation():
