@@ -110,8 +110,6 @@ index = 0
 
 class Layer:
 
-    # z = None
-
     def __init__(self, numNeurons, previousLayer: Type['Layer'] = None, nextLayer: Type['Layer'] = None, neurons = None) -> None:
         self.numNeurons = numNeurons
 
