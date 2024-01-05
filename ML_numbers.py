@@ -182,13 +182,13 @@ class Layer:
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)    # was learning_rate *
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += learning_rate * (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)    # was learning_rate *
 
                 
                 # calculate gradient for bias
                 dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 sumCost_bias = float(2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
-                self.gradient_bias[currentLayerNeuronIndex] += (dSigmoid_ZCurrent_for_bias * sumCost_bias)                                          # was learning_rate * 
+                self.gradient_bias[currentLayerNeuronIndex] += learning_rate * (dSigmoid_ZCurrent_for_bias * sumCost_bias)                                          # was learning_rate * 
                 # print("Current bias: ", self.gradient_bias[currentLayerNeuronIndex])
 
         else:
@@ -210,12 +210,12 @@ class Layer:
                         
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] +=  (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost) # was learning_rate *
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] +=  learning_rate * (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost) # was learning_rate *
 
                 # find bias for each neuron in hidden layer
                 dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 costCurrentNeuron = self.dC_dAL[currentLayerNeuronIndex]
-                self.gradient_bias[currentLayerNeuronIndex] += (dSigmoid_ZCurrent_for_bias * costCurrentNeuron)             # was learning_rate *
+                self.gradient_bias[currentLayerNeuronIndex] += learning_rate * (dSigmoid_ZCurrent_for_bias * costCurrentNeuron)             # was learning_rate *
 
                 
 #^^ For testing
@@ -391,8 +391,8 @@ def main():
             """
             # print("Done with batch - apply and reset")
             for layer in layers[1:]:
-                layer.weights = np.subtract(layer.weights, np.multiply(np.divide(layer.gradient_weight, batchSize), learning_rate)  )
-                layer.biases = np.subtract(layer.biases,   np.multiply(np.divide(layer.gradient_bias, batchSize), learning_rate) )
+                layer.weights = np.subtract(layer.weights, np.divide(layer.gradient_weight, batchSize)  )
+                layer.biases = np.subtract(layer.biases,   np.divide(layer.gradient_bias, batchSize) )
 
                 # reset gradient values to 0 for next batch
                 # layer.gradient_weight = np.array([[0.0 for col in range(layer.previousLayer.numNeurons)] for row in range(layer.numNeurons)])
