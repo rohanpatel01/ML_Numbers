@@ -1,12 +1,10 @@
 import numpy as np
-# import pickle
-# import os.path
 import mnist
 from mnist import MNIST
 from typing import Type
 import random
 import math
-# import copy
+import matplotlib.pyplot as plt
 
 """
 
@@ -15,12 +13,21 @@ start training algorithm and test if works
 
 """
 
-
 def sigmoid(x):
     return 1/(1 + np.exp(-x))
 
 def derivative_sigmoid(x):
     return np.exp(-x) / math.pow((1 + np.exp(-x)), 2)
+
+def normalizeInput(input):
+    minInput = min(input)
+    maxInput = max(input)
+
+    difference = maxInput - minInput
+
+    for element in input:
+        element = (element - minInput) / difference
+
 
 def getRandomVal01():
     return round(random.uniform(0, 1), 2)
@@ -93,16 +100,22 @@ def normalizedXavierWeightInit(numNodesPrevLayer, numNodesCurrentLayer):
     lower, upper = -(math.sqrt(6.0) / math.sqrt(numNodesPrevLayer + numNodesCurrentLayer)), (math.sqrt(6.0) / math.sqrt(numNodesPrevLayer + numNodesCurrentLayer))
     return round(random.uniform(lower, upper), 2)
 
+def xaviewWeightInit(numNodesPrevLayer):
+    lower, upper = -(1 / math.sqrt(numNodesPrevLayer)), (1 / math.sqrt(numNodesPrevLayer))
+    return round(random.uniform(lower, upper), 2)
 
 mndata = MNIST('samples')
 images, labels = mndata.load_training()
+
+learning_rate = 0.01            # was 0.002125    - 0.1 in video
+
 
 index = 0
 # ^^ Don't delete - for actual image
 currentImage = images[index]
 currentImageLabel = labels[index]
+numTrainingImages = len(images)
 
-print("label data: ", currentImageLabel)
 
 class Layer:
 
@@ -126,6 +139,8 @@ class Layer:
         else:
 
             self.weights = np.array([[normalizedXavierWeightInit(previousLayer.numNeurons, numNeurons) for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
+            # self.weights = np.array([[xaviewWeightInit(previousLayer.numNeurons) for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
+            
             self.gradient_weight = np.array([[0.0 for col in range(previousLayer.numNeurons)] for row in range(numNeurons)])
             self.gradient_bias = np.array([0.0] * numNeurons)
 
@@ -136,6 +151,13 @@ class Layer:
     def forwardPropigation(self):
         # note: self.z is a vector not a single value. It holds the Z values for each neuron in the layer
         self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
+
+
+        print("self.weights: ", self.weights)
+        print("self.previousLayer.neurons: ", self.previousLayer.neurons)
+
+        print("self.z: ", self.z)
+
         self.neurons = sigmoid(self.z)
 
 
@@ -160,14 +182,14 @@ class Layer:
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += learning_rate * (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)
 
                 
                 # calculate gradient for bias
                 dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 sumCost_bias = float(2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
-                self.gradient_bias[currentLayerNeuronIndex] += dSigmoid_ZCurrent_for_bias * sumCost_bias
-
+                self.gradient_bias[currentLayerNeuronIndex] += learning_rate * (dSigmoid_ZCurrent_for_bias * sumCost_bias)
+                # print("Current bias: ", self.gradient_bias[currentLayerNeuronIndex])
 
         else:
             # calculate gradient for weight
@@ -188,12 +210,12 @@ class Layer:
                         
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost # this sumCost is fine b/c it's for this neuron not next
+                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += learning_rate * (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost) # this sumCost is fine b/c it's for this neuron not next
 
                 # find bias for each neuron in hidden layer
                 dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 costCurrentNeuron = self.dC_dAL[currentLayerNeuronIndex]
-                self.gradient_bias[currentLayerNeuronIndex] += dSigmoid_ZCurrent_for_bias * costCurrentNeuron
+                self.gradient_bias[currentLayerNeuronIndex] += learning_rate * (dSigmoid_ZCurrent_for_bias * costCurrentNeuron)
 
                 
 #^^ For testing
@@ -204,6 +226,8 @@ inputLayerLen = len(currentImage)       # was inputLayer.numNeurons
 hiddenLayer1Len = 16      # was 16
 hiddenLayer2Len = 16    # was 16
 outputLayerLen = 10     # was 10
+
+
 
 # ^^ Don't delete - for actual image
 # change data values from mnist (0-255) to our (0-1)
@@ -234,6 +258,10 @@ hiddenLayer1.weights = np.array([[normalizedXavierWeightInit(inputLayer.numNeuro
 hiddenLayer2.weights = np.array([[normalizedXavierWeightInit(hiddenLayer1.numNeurons, hiddenLayer2.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
 outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeurons, outputLayer.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
 
+# hiddenLayer1.weights = np.array([[xaviewWeightInit(inputLayer.numNeurons) for col in range(inputLayer.numNeurons)] for row in range(hiddenLayer1.numNeurons)])
+# hiddenLayer2.weights = np.array([[xaviewWeightInit(hiddenLayer1.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
+# outputLayer.weights = np.array([[xaviewWeightInit(hiddenLayer2.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
+
 # for test - manually forcing values / environment that would be seen after forward propigation
 # hiddenLayer1.neurons = np.array([0.35663485, 0.30767744])
 # hiddenLayer2.neurons = np.array([[0.52180225, 0.41313151]])
@@ -249,11 +277,9 @@ outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeur
 # expected[0] = 1  # for test: expected will be first neuron to be 1 and all others to be 0
 
 expected = [0.0] * len(outputLayer.neurons)
-
 expected[currentImageLabel] = 1.0
 
 
-# TODO: Compute new layer value as method within layers. then have this function just call that for all layers and print output to check
 def forwardPropigation():
     for layer in layers[1:]:
         layer.forwardPropigation()
@@ -266,15 +292,146 @@ def backPropigation():
 
     
 def main():
-   
-
-    # TODO: Implement batch processing, keep doing backprop but only update the values after done with a batch
+    
     # TODO: learning rate
-    # TODO: new weight = old weight - cost
-    #^^^ If doesn't give convergence try adding
+    
+
+    global index
+    global expected
+    global layers
+
+    numCorrect = 0
+
+
+    batchImageCounter = 0
+    batchSize = 100            # was 100
+    numBatchesToProcess = 5     # was 5
+
+    x = np.array([x] for x in range(0))
+    plt.xlim(0, batchSize * numBatchesToProcess)
+    plt.ylim(-5, 5)
+    plt.grid()
+    
+    # testOneImageIndex = 0
+
+    while ( (index < numTrainingImages) and (index < (numBatchesToProcess * batchSize))   ):      # and (testOneImageIndex < (numBatchesToProcess * batchSize) )
+        
+        # process image with back and forward propigation
+        currentImage = images[index]
+        currentImageLabel = labels[index]
+
+        expected = [0.0] * len(outputLayer.neurons)
+        expected[currentImageLabel] = 1.0
+
+        # turn input image from 0-255 into 0-1
+        for x in range(inputLayerLen):
+            currentImage[x] = currentImage[x] / 255
+
+        # normalizeInput(currentImage) # bad performance with normalizing the input
+
+        # print(currentImage)
+
+        inputLayer.neurons = currentImage
+        print("Current Image Index: ", index)
+        # print("Test Image Index: ", testOneImageIndex)
+
+
+        print("Current Image label: ", currentImageLabel)
+        # print("output weight 1 gradient: ", layers[-1].gradient_weight[0][0])
+        # print("output bias 2 gradient: ", layers[-2].biases[0])
+
+        print("--------------------------------------------")
+
+        forwardPropigation()
+
+        return
+
+        # find accuracy
+
+        prediction = list((layers[-1].neurons)).index(max(layers[-1].neurons))
+
+        # print("output: ", layers[-1].neurons)
+
+        # print("prediction: ", list((layers[-1].neurons)).index(max(layers[-1].neurons)))
+
+
+        if (prediction == currentImageLabel):
+            numCorrect += 1
+
+        plt.plot(index, (numCorrect // (index + 1)), marker="o", markersize=1, markeredgecolor="blue", markerfacecolor="green")
+        
+        
+        expected = [0.0] * len(outputLayer.neurons)
+        expected[currentImageLabel] = 1.0
+        # compute cost for output layer
+
+        # print("output neurons: ", layers[-1].neurons)
+
+        cost = 0.0
+        for f in range(layers[-1].numNeurons):
+            cost += math.pow(layers[-1].neurons[f] - expected[f],2)
+
+
+        plt.plot(index, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
+        # plt.plot(testOneImageIndex, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
+
+
+        backPropigation()
+        
+        index += 1
+        # testOneImageIndex += 1      #^ just to test if the cost is updating or random
+
+        batchImageCounter += 1
+
+        # if we are done with a batch process the gradient and clear it for next
+        if ( (batchImageCounter >= batchSize) ):
+            """
+            batch has been processed. new weight / bias = old - gradient
+            clear all gradients to 0.0
+            reset batchImageCounter to 0
+            """
+            # print("Done with batch - apply and reset")
+            for layer in layers[1:]:
+                layer.weights = np.subtract(layer.weights,  np.divide(layer.gradient_weight, batchSize))
+                layer.biases = np.subtract(layer.biases, np.divide(layer.gradient_bias, batchSize))
+
+                # reset gradient values to 0 for next batch
+                # layer.gradient_weight = np.array([[0.0 for col in range(layer.previousLayer.numNeurons)] for row in range(layer.numNeurons)])
+                # layer.gradient_bias = np.array([0.0] * layer.numNeurons)
+
+                batchImageCounter = 0
+
+            print("--------------------------------------------")
+            print("Weight gradient output layer: ", np.divide(layer.gradient_weight, batchSize)[0][0])
+            print("--------------------------------------------")
+    
+
+    # test model on an image
+    testImage = images[index + 1]       
+    testImageLabel = labels[index + 1]
+
+    
+    # turn input image from 0-255 into 0-1
+    for x in range(inputLayerLen):
+        testImage[x] = testImage[x] / 255
+
+    inputLayer.neurons = testImage
+
+    expected = [0.0] * len(outputLayer.neurons)
+    expected[testImageLabel] = 1.0
+
+
     forwardPropigation()
-    backPropigation()
-    seeNeuralNetworkVals()
+
+    print("Output Layer: ", outputLayer.neurons)
+    print("-------------------------------------")
+    print("Test Label: ", testImageLabel)
+    print("Expected array: ", expected)
+
+    plt.show()
+
+
+    forwardPropigation
 
 
     
