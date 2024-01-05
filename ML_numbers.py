@@ -107,7 +107,7 @@ def xaviewWeightInit(numNodesPrevLayer):
 mndata = MNIST('samples')
 images, labels = mndata.load_training()
 
-learning_rate = 0.01            # was 0.002125    - 0.1 in video
+learning_rate = 0.2            # was 0.002125    - 0.1 in video
 
 
 index = 0
@@ -153,10 +153,10 @@ class Layer:
         self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
 
 
-        print("self.weights: ", self.weights)
-        print("self.previousLayer.neurons: ", self.previousLayer.neurons)
+        # print("self.weights: ", self.weights)
+        # print("self.previousLayer.neurons: ", self.previousLayer.neurons)
 
-        print("self.z: ", self.z)
+        # print("self.z: ", self.z)
 
         self.neurons = sigmoid(self.z)
 
