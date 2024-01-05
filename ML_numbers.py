@@ -153,10 +153,10 @@ class Layer:
         self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
 
 
-        print("self.weights: ", self.weights)
-        print("self.previousLayer.neurons: ", self.previousLayer.neurons)
+        # print("self.weights: ", self.weights)
+        # print("self.previousLayer.neurons: ", self.previousLayer.neurons)
 
-        print("self.z: ", self.z)
+        # print("self.z: ", self.z)
 
         self.neurons = sigmoid(self.z)
 
@@ -400,9 +400,9 @@ def main():
 
                 batchImageCounter = 0
 
-            print("--------------------------------------------")
-            print("Weight gradient output layer: ", np.divide(layer.gradient_weight, batchSize)[0][0])
-            print("--------------------------------------------")
+            # print("--------------------------------------------")
+            # print("Weight gradient output layer: ", np.divide(layer.gradient_weight, batchSize)[0][0])
+            # print("--------------------------------------------")
     
 
     # test model on an image
