@@ -107,7 +107,7 @@ def xaviewWeightInit(numNodesPrevLayer):
 mndata = MNIST('samples')
 images, labels = mndata.load_training()
 
-learning_rate = 0.01            # was 0.002125    - 0.1 in video
+learning_rate = 0.2           # was 0.002125    - 0.1 in video
 
 
 index = 0
