@@ -112,9 +112,9 @@ learning_rate = 0.01            # was 0.002125    - 0.1 in video
 
 index = 0
 # ^^ Don't delete - for actual image
-currentImage = images[index]
-currentImageLabel = labels[index]
-numTrainingImages = len(images)
+# currentImage = images[index]
+# currentImageLabel = labels[index]
+# numTrainingImages = len(images)
 
 
 class Layer:
@@ -222,24 +222,30 @@ class Layer:
 # inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
 
-inputLayerLen = len(currentImage)       # was inputLayer.numNeurons 
-hiddenLayer1Len = 16      # was 16
-hiddenLayer2Len = 16    # was 16
-outputLayerLen = 10     # was 10
+# inputLayerLen = len(currentImage)       # was inputLayer.numNeurons
+                
+inputLayerLen = 3       #^ for testing
+hiddenLayer1Len = 2      # was 16
+hiddenLayer2Len = 2    # was 16
+outputLayerLen = 2     # was 10
 
 
 
 # ^^ Don't delete - for actual image
 # change data values from mnist (0-255) to our (0-1)
-for x in range(inputLayerLen):
-    currentImage[x] = currentImage[x] / 255
+# for x in range(inputLayerLen):
+#     currentImage[x] = currentImage[x] / 255
 
 
 # neurons at each layer - init vals remain 0 b/c their av is calculated not set to random
 # ^^ Don't delete - for actual image
 # inputLayer = np.array(currentImage, previousLayer= None)     #^^ make sure this is correct
 
-inputLayer = Layer(numNeurons=len(currentImage), neurons=currentImage)
+#^ for test
+# inputLayer = np.array([0.3, 0.5, 0.7], previousLayer = None)
+
+inputLayer = Layer(numNeurons = 3, neurons=np.array([0.3, 0.5, 0.7]))
+# inputLayer = Layer(numNeurons=len(currentImage), neurons=currentImage)
 hiddenLayer1 = Layer(previousLayer=inputLayer, numNeurons=hiddenLayer1Len)
 hiddenLayer2 = Layer(previousLayer=hiddenLayer1, numNeurons=hiddenLayer2Len)
 outputLayer = Layer(previousLayer=hiddenLayer2, numNeurons=outputLayerLen)
@@ -262,32 +268,34 @@ outputLayer.weights = np.array([[normalizedXavierWeightInit(hiddenLayer2.numNeur
 # hiddenLayer2.weights = np.array([[xaviewWeightInit(hiddenLayer1.numNeurons) for col in range(hiddenLayer1.numNeurons)] for row in range(hiddenLayer2.numNeurons)])
 # outputLayer.weights = np.array([[xaviewWeightInit(hiddenLayer2.numNeurons) for col in range(hiddenLayer2.numNeurons)] for row in range(outputLayer.numNeurons)])
 
-# for test - manually forcing values / environment that would be seen after forward propigation
-# hiddenLayer1.neurons = np.array([0.35663485, 0.30767744])
-# hiddenLayer2.neurons = np.array([[0.52180225, 0.41313151]])
-# outputLayer.neurons = np.array([[0.61935516, 0.30040983]])
 
 #^ For testing
-# hiddenLayer1.weights = np.array([[ 0.36, -0.57, -0.59],[-0.78, -0.58, -0.41]])
-# hiddenLayer2.weights = np.array([[ -0.48,  0.84],[-0.32, -0.77]])
-# outputLayer.weights = np.array([[ 0.64,  0.37],[-1.05, -0.72]])
+hiddenLayer1.weights = np.array([[ 0.36, -0.57, -0.59],[-0.78, -0.58, -0.41]])
+hiddenLayer2.weights = np.array([[ -0.48,  0.84],[-0.32, -0.77]])
+outputLayer.weights = np.array([[ 0.64,  0.37],[-1.05, -0.72]])
 
 #^ for testing
-# expected = [0.0] * len(outputLayer.neurons)
-# expected[0] = 1  # for test: expected will be first neuron to be 1 and all others to be 0
-
 expected = [0.0] * len(outputLayer.neurons)
-expected[currentImageLabel] = 1.0
+expected[0] = 1  # for test: expected will be first neuron to be 1 and all others to be 0
+
+#^ actual expected
+# expected = [0.0] * len(outputLayer.neurons)
+# expected[currentImageLabel] = 1.0
 
 
 def forwardPropigation():
     for layer in layers[1:]:
         layer.forwardPropigation()
 
+
+
 def backPropigation():
 
-    for x in range(len(layers) - 1, 0, -1):
-        layers[x].backPropigation()
+    # for x in range(len(layers) - 1, 0, -1):
+    #     layers[x].backPropigation()
+
+    layers[-1].backPropigation()
+
 
 
     
@@ -311,127 +319,131 @@ def main():
     plt.xlim(0, batchSize * numBatchesToProcess)
     plt.ylim(-5, 5)
     plt.grid()
-    
-    # testOneImageIndex = 0
-
-    while ( (index < numTrainingImages) and (index < (numBatchesToProcess * batchSize))   ):      # and (testOneImageIndex < (numBatchesToProcess * batchSize) )
-        
-        # process image with back and forward propigation
-        currentImage = images[index]
-        currentImageLabel = labels[index]
-
-        expected = [0.0] * len(outputLayer.neurons)
-        expected[currentImageLabel] = 1.0
-
-        # turn input image from 0-255 into 0-1
-        for x in range(inputLayerLen):
-            currentImage[x] = currentImage[x] / 255
-
-        # normalizeInput(currentImage) # bad performance with normalizing the input
-
-        # print(currentImage)
-
-        inputLayer.neurons = currentImage
-        print("Current Image Index: ", index)
-        # print("Test Image Index: ", testOneImageIndex)
-
-
-        print("Current Image label: ", currentImageLabel)
-        # print("output weight 1 gradient: ", layers[-1].gradient_weight[0][0])
-        # print("output bias 2 gradient: ", layers[-2].biases[0])
-
-        print("--------------------------------------------")
-
-        forwardPropigation()
-
-        return
-
-        # find accuracy
-
-        prediction = list((layers[-1].neurons)).index(max(layers[-1].neurons))
-
-        # print("output: ", layers[-1].neurons)
-
-        # print("prediction: ", list((layers[-1].neurons)).index(max(layers[-1].neurons)))
-
-
-        if (prediction == currentImageLabel):
-            numCorrect += 1
-
-        plt.plot(index, (numCorrect // (index + 1)), marker="o", markersize=1, markeredgecolor="blue", markerfacecolor="green")
-        
-        
-        expected = [0.0] * len(outputLayer.neurons)
-        expected[currentImageLabel] = 1.0
-        # compute cost for output layer
-
-        # print("output neurons: ", layers[-1].neurons)
-
-        cost = 0.0
-        for f in range(layers[-1].numNeurons):
-            cost += math.pow(layers[-1].neurons[f] - expected[f],2)
-
-
-        plt.plot(index, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
-        # plt.plot(testOneImageIndex, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
-
-
-        backPropigation()
-        
-        index += 1
-        # testOneImageIndex += 1      #^ just to test if the cost is updating or random
-
-        batchImageCounter += 1
-
-        # if we are done with a batch process the gradient and clear it for next
-        if ( (batchImageCounter >= batchSize) ):
-            """
-            batch has been processed. new weight / bias = old - gradient
-            clear all gradients to 0.0
-            reset batchImageCounter to 0
-            """
-            # print("Done with batch - apply and reset")
-            for layer in layers[1:]:
-                layer.weights = np.subtract(layer.weights,  np.divide(layer.gradient_weight, batchSize))
-                layer.biases = np.subtract(layer.biases, np.divide(layer.gradient_bias, batchSize))
-
-                # reset gradient values to 0 for next batch
-                # layer.gradient_weight = np.array([[0.0 for col in range(layer.previousLayer.numNeurons)] for row in range(layer.numNeurons)])
-                # layer.gradient_bias = np.array([0.0] * layer.numNeurons)
-
-                batchImageCounter = 0
-
-            print("--------------------------------------------")
-            print("Weight gradient output layer: ", np.divide(layer.gradient_weight, batchSize)[0][0])
-            print("--------------------------------------------")
-    
-
-    # test model on an image
-    testImage = images[index + 1]       
-    testImageLabel = labels[index + 1]
-
-    
-    # turn input image from 0-255 into 0-1
-    for x in range(inputLayerLen):
-        testImage[x] = testImage[x] / 255
-
-    inputLayer.neurons = testImage
-
-    expected = [0.0] * len(outputLayer.neurons)
-    expected[testImageLabel] = 1.0
-
 
     forwardPropigation()
 
-    print("Output Layer: ", outputLayer.neurons)
-    print("-------------------------------------")
-    print("Test Label: ", testImageLabel)
-    print("Expected array: ", expected)
+    backPropigation()
+    
+    # testOneImageIndex = 0
 
-    plt.show()
+    # while ( (index < numTrainingImages) and (index < (numBatchesToProcess * batchSize))   ):      # and (testOneImageIndex < (numBatchesToProcess * batchSize) )
+        
+    #     # process image with back and forward propigation
+    #     currentImage = images[index]
+    #     currentImageLabel = labels[index]
+
+    #     expected = [0.0] * len(outputLayer.neurons)
+    #     expected[currentImageLabel] = 1.0
+
+    #     # turn input image from 0-255 into 0-1
+    #     for x in range(inputLayerLen):
+    #         currentImage[x] = currentImage[x] / 255
+
+    #     # normalizeInput(currentImage) # bad performance with normalizing the input
+
+    #     # print(currentImage)
+
+    #     inputLayer.neurons = currentImage
+    #     print("Current Image Index: ", index)
+    #     # print("Test Image Index: ", testOneImageIndex)
 
 
-    forwardPropigation
+    #     print("Current Image label: ", currentImageLabel)
+    #     # print("output weight 1 gradient: ", layers[-1].gradient_weight[0][0])
+    #     # print("output bias 2 gradient: ", layers[-2].biases[0])
+
+    #     print("--------------------------------------------")
+
+    #     forwardPropigation()
+
+        
+
+    #     # find accuracy
+
+    #     prediction = list((layers[-1].neurons)).index(max(layers[-1].neurons))
+
+    #     # print("output: ", layers[-1].neurons)
+
+    #     # print("prediction: ", list((layers[-1].neurons)).index(max(layers[-1].neurons)))
+
+
+    #     if (prediction == currentImageLabel):
+    #         numCorrect += 1
+
+    #     plt.plot(index, (numCorrect // (index + 1)), marker="o", markersize=1, markeredgecolor="blue", markerfacecolor="green")
+        
+        
+    #     expected = [0.0] * len(outputLayer.neurons)
+    #     expected[currentImageLabel] = 1.0
+    #     # compute cost for output layer
+
+    #     # print("output neurons: ", layers[-1].neurons)
+
+    #     cost = 0.0
+    #     for f in range(layers[-1].numNeurons):
+    #         cost += math.pow(layers[-1].neurons[f] - expected[f],2)
+
+
+    #     plt.plot(index, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
+    #     # plt.plot(testOneImageIndex, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
+
+
+    #     backPropigation()
+        
+    #     index += 1
+    #     # testOneImageIndex += 1      #^ just to test if the cost is updating or random
+
+    #     batchImageCounter += 1
+
+    #     # if we are done with a batch process the gradient and clear it for next
+    #     if ( (batchImageCounter >= batchSize) ):
+    #         """
+    #         batch has been processed. new weight / bias = old - gradient
+    #         clear all gradients to 0.0
+    #         reset batchImageCounter to 0
+    #         """
+    #         # print("Done with batch - apply and reset")
+    #         for layer in layers[1:]:
+    #             layer.weights = np.subtract(layer.weights,  np.divide(layer.gradient_weight, batchSize))
+    #             layer.biases = np.subtract(layer.biases, np.divide(layer.gradient_bias, batchSize))
+
+    #             # reset gradient values to 0 for next batch
+    #             # layer.gradient_weight = np.array([[0.0 for col in range(layer.previousLayer.numNeurons)] for row in range(layer.numNeurons)])
+    #             # layer.gradient_bias = np.array([0.0] * layer.numNeurons)
+
+    #             batchImageCounter = 0
+
+    #         print("--------------------------------------------")
+    #         print("Weight gradient output layer: ", np.divide(layer.gradient_weight, batchSize)[0][0])
+    #         print("--------------------------------------------")
+    
+
+    # test model on an image
+    # testImage = images[index + 1]       
+    # testImageLabel = labels[index + 1]
+
+    
+    # # turn input image from 0-255 into 0-1
+    # for x in range(inputLayerLen):
+    #     testImage[x] = testImage[x] / 255
+
+    # inputLayer.neurons = testImage
+
+    # expected = [0.0] * len(outputLayer.neurons)
+    # expected[testImageLabel] = 1.0
+
+
+    # forwardPropigation()
+
+    # print("Output Layer: ", outputLayer.neurons)
+    # print("-------------------------------------")
+    # print("Test Label: ", testImageLabel)
+    # print("Expected array: ", expected)
+
+    # plt.show()
+
+
+    # forwardPropigation        #^ what is this for?
 
 
     
