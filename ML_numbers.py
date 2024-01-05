@@ -14,10 +14,10 @@ start training algorithm and test if works
 """
 
 def sigmoid(x):
-    return 1/(1 + np.exp(-x))
+    return (1/(1 + np.exp(-x)))
 
 def derivative_sigmoid(x):
-    return np.exp(-x) / math.pow((1 + np.exp(-x)), 2)
+    return (np.exp(-x) / (math.pow((1 + np.exp(-x)), 2)))
 
 def normalizeInput(input):
     minInput = min(input)
@@ -107,12 +107,13 @@ def xaviewWeightInit(numNodesPrevLayer):
 mndata = MNIST('samples')
 images, labels = mndata.load_training()
 
-learning_rate = 0.2            # was 0.002125    - 0.1 in video
+learning_rate = 0.01            # was 0.002125    - 0.1 in video
 
 
 index = 0
 # ^^ Don't delete - for actual image
 currentImage = images[index]
+# print("current image: ", currentImage)
 currentImageLabel = labels[index]
 numTrainingImages = len(images)
 
@@ -150,15 +151,20 @@ class Layer:
 
     def forwardPropigation(self):
         # note: self.z is a vector not a single value. It holds the Z values for each neuron in the layer
-        self.z = np.matmul(self.weights, self.previousLayer.neurons) #+ self.biases
+        
+        
+        self.z = np.dot(self.weights, self.previousLayer.neurons) #+ self.biases # was matmul - keeping dot since that's what the video does
 
+        # if not self.nextLayer:
+        #     print("Output weights: ", self.weights)
+        #     print("Output prev neurons: ", self.previousLayer.neurons)
+        #     print("Z: ", self.z)
 
-        # print("self.weights: ", self.weights)
-        # print("self.previousLayer.neurons: ", self.previousLayer.neurons)
-
-        # print("self.z: ", self.z)
-
+        # print(self.z[0])
         self.neurons = sigmoid(self.z)
+        # print(self.neurons[0])
+
+
 
 
 
@@ -167,20 +173,20 @@ class Layer:
         # train same model vals with a batch of training examples, then take sum of all those to get actual cost function
 
         if not self.nextLayer:
-
             # calculate gradient for weight
             self.dC_dAL = np.array([0.0] * self.numNeurons) 
 
             for currentLayerNeuronIndex in range(len(self.neurons)):
                 
+                sumCost = float((2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))) # changed to = from += 
+                self.dC_dAL[currentLayerNeuronIndex] = sumCost
+                dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+                
+
                 #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
-
-                    # sumCost = 0.0
-                    sumCost = float((2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))) # changed to = from += 
-                    self.dC_dAL[currentLayerNeuronIndex] = sumCost
+                    
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
-                    dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                     
                     self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)    # was learning_rate *
 
@@ -196,18 +202,23 @@ class Layer:
             self.dC_dAL = np.array([0.0] * self.numNeurons)
 
             for currentLayerNeuronIndex in range(len(self.neurons)):
+                dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+
+                
+
+
                 for prevLayerWeightIndex in range(len(self.previousLayer.neurons)): # this is how many weights per neuron in this layer
 
                     prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
-                    dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
 
                     sumCost = 0.0
                     # sum the influence of current neuron's activation on cost: dC_dAL-1 (hidden layer)
                     for nextLayerNeuronIndex in range(len(self.nextLayer.neurons)):
-                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex]
+                        nextLayerWeightForCurrentNeuron = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex] # W (l+1) (jk)
                         dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex])
-                        sumCost += nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL[nextLayerNeuronIndex]     # was self.nextLayer.dC_dAL
-                        
+                        sumCost += (nextLayerWeightForCurrentNeuron * dSigmoid_ZNext * self.nextLayer.dC_dAL[nextLayerNeuronIndex])     # was self.nextLayer.dC_dAL
+                    
+                    print("sumCost: ", sumCost)
                     self.dC_dAL[currentLayerNeuronIndex] = sumCost
                     
                     self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] +=  (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost) # was learning_rate *
@@ -221,12 +232,10 @@ class Layer:
 #^^ For testing
 # inputLayer = Layer(previousLayer=None, numNeurons=3, neurons=np.array([0.3, 0.5, 0.7]))
 
-
 inputLayerLen = len(currentImage)       # was inputLayer.numNeurons 
 hiddenLayer1Len = 16      # was 16
 hiddenLayer2Len = 16    # was 16
 outputLayerLen = 10     # was 10
-
 
 
 # ^^ Don't delete - for actual image
@@ -287,14 +296,12 @@ def forwardPropigation():
 def backPropigation():
 
     for x in range(len(layers) - 1, 0, -1):
+        # print("index: ",x, end="")
         layers[x].backPropigation()
 
 
     
-def main():
-    
-    # TODO: learning rate
-    
+def main():    
 
     global index
     global expected
@@ -304,8 +311,8 @@ def main():
 
 
     batchImageCounter = 0
-    batchSize = 100.0            # was 100
-    numBatchesToProcess = 5     # was 5
+    batchSize = 10.0            # was 100
+    numBatchesToProcess = 100.0     # was 5
 
     x = np.array([x] for x in range(0))
     plt.xlim(0, batchSize * numBatchesToProcess)
@@ -313,7 +320,7 @@ def main():
     plt.grid()
     
     # testOneImageIndex = 0
-
+    predictionSum = 0.0
     while ( (index < numTrainingImages) and (index < (numBatchesToProcess * batchSize))   ):      # and (testOneImageIndex < (numBatchesToProcess * batchSize) )
         
         # process image with back and forward propigation
@@ -323,7 +330,7 @@ def main():
         expected = [0.0] * len(outputLayer.neurons)
         expected[currentImageLabel] = 1.0
 
-        # turn input image from 0-255 into 0-1
+        # normalize input to [0,1]
         for x in range(inputLayerLen):
             currentImage[x] = currentImage[x] / 255
 
@@ -348,10 +355,11 @@ def main():
         # find accuracy
 
         prediction = list((layers[-1].neurons)).index(max(layers[-1].neurons))
+        predictionSum += prediction
 
         # print("output: ", layers[-1].neurons)
 
-        # print("prediction: ", list((layers[-1].neurons)).index(max(layers[-1].neurons)))
+        print("prediction: ", list((layers[-1].neurons)).index(max(layers[-1].neurons)))
 
 
         if (prediction == currentImageLabel):
@@ -391,8 +399,8 @@ def main():
             """
             # print("Done with batch - apply and reset")
             for layer in layers[1:]:
-                layer.weights = np.subtract(layer.weights, np.multiply(np.divide(layer.gradient_weight, batchSize), learning_rate)  )
-                layer.biases = np.subtract(layer.biases,   np.multiply(np.divide(layer.gradient_bias, batchSize), learning_rate) )
+                layer.weights = np.subtract(layer.weights, np.multiply(np.divide(layer.gradient_weight, batchSize), learning_rate)  ) 
+                layer.biases = np.subtract(layer.biases,   np.multiply(np.divide(layer.gradient_bias, batchSize), learning_rate) )   
 
                 # reset gradient values to 0 for next batch
                 # layer.gradient_weight = np.array([[0.0 for col in range(layer.previousLayer.numNeurons)] for row in range(layer.numNeurons)])
@@ -403,7 +411,13 @@ def main():
             print("--------------------------------------------")
             print("Weight gradient output layer: ", np.divide(layer.gradient_weight, batchSize)[0][0])
             print("--------------------------------------------")
+
     
+
+    print("Average output: ", predictionSum / index + 1)
+
+
+
 
     # test model on an image
     testImage = images[index + 1]       
@@ -430,7 +444,7 @@ def main():
     plt.show()
 
 
-    forwardPropigation
+    forwardPropigation()
 
 
     
