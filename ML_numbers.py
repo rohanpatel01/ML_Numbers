@@ -153,12 +153,12 @@ class Layer:
         self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
 
 
-        # print("self.weights: ", self.weights)
-        # print("self.previousLayer.neurons: ", self.previousLayer.neurons)
+        # check it output layer and don't apply sigmoid
 
-        # print("self.z: ", self.z)
-
-        self.neurons = sigmoid(self.z)
+        if not self.nextLayer:
+            self.neurons = self.z
+        else:
+            self.neurons = sigmoid(self.z)
 
 
 
