@@ -150,7 +150,7 @@ class Layer:
 
     def forwardPropigation(self):
         # note: self.z is a vector not a single value. It holds the Z values for each neuron in the layer
-        self.z = np.matmul(self.weights, self.previousLayer.neurons) + self.biases
+        self.z = np.matmul(self.weights, self.previousLayer.neurons) #+ self.biases
 
 
         # print("self.weights: ", self.weights)
