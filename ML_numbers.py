@@ -181,52 +181,83 @@ class Layer:
     def backPropigation(self):
         
         # TODO: change to apply dC_DaL calculation differently based on output or hidden layer, don't have the same code in both instances
-        if not self.nextLayer:
-            # calculate gradient for weight
-            self.dC_dAL = np.array([0.0] * self.numNeurons) 
+        #^^^ TODO: works worse now with refactor
 
-            for currentLayerNeuronIndex in range(len(self.neurons)):
+        self.dC_dAL = np.array([0.0] * self.numNeurons) 
+        
+        for currentLayerNeuronIndex in range(len(self.neurons)):
+            dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])   # da / dZ
+
+            # output layer
+            if not self.nextLayer:
+                outputCost = (2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
+                self.dC_dAL[currentLayerNeuronIndex] = outputCost
+
+            else:
+                for nextLayerIndex in range(self.nextLayer.numNeurons):
+                    weight = self.nextLayer.weights[nextLayerIndex][currentLayerNeuronIndex]
+                    dSigmoid_ZNext = derivative_sigmoid(self.nextLayer.z[nextLayerIndex])
+                    costNextNeuron = self.nextLayer.dC_dAL[nextLayerIndex]
+                    self.dC_dAL[currentLayerNeuronIndex] += weight * dSigmoid_ZNext * costNextNeuron
+
                 
-                sumCost = float((2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))) # changed to = from += 
-                self.dC_dAL[currentLayerNeuronIndex] = sumCost
-                dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+            
+            for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
+                prevNeuron = self.previousLayer.neurons[prevLayerWeightIndex]
+
+                self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] = prevNeuron * dSigmoid_ZCurrent * self.dC_dAL[currentLayerNeuronIndex]
+
+
+
+
+
+
+        # if not self.nextLayer:
+        #     # calculate gradient for weight
+        #     self.dC_dAL = np.array([0.0] * self.numNeurons) 
+
+        #     for currentLayerNeuronIndex in range(len(self.neurons)):
+                
+        #         sumCost = float((2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))) # changed to = from += 
+        #         self.dC_dAL[currentLayerNeuronIndex] = sumCost
+        #         dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])
                 
 
-                #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
-                for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
+        #         #^^ Note: number of weights attacked to each neuron in current layer = number of neurons in previous layer
+        #         for prevLayerWeightIndex in range(len(self.previousLayer.neurons)):
                     
-                    prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
+        #             prevLayerNeuronOutput = self.previousLayer.neurons[prevLayerWeightIndex]
                     
-                    self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)    # was learning_rate *
+        #             self.gradient_weight[currentLayerNeuronIndex][prevLayerWeightIndex] += (prevLayerNeuronOutput * dSigmoid_ZCurrent * sumCost)    # was learning_rate *
 
                 
-                # calculate gradient for bias
-                dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                sumCost_bias = float(2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
-                self.gradient_bias[currentLayerNeuronIndex] += (dSigmoid_ZCurrent_for_bias * sumCost_bias)                                          # was learning_rate * 
-                # print("Current bias: ", self.gradient_bias[currentLayerNeuronIndex])
+        #         # calculate gradient for bias
+        #         dSigmoid_ZCurrent_for_bias = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+        #         sumCost_bias = float(2 * (self.neurons[currentLayerNeuronIndex] - expected[currentLayerNeuronIndex]))
+        #         self.gradient_bias[currentLayerNeuronIndex] += (dSigmoid_ZCurrent_for_bias * sumCost_bias)                                          # was learning_rate * 
+        #         # print("Current bias: ", self.gradient_bias[currentLayerNeuronIndex])
 
-        else:
-            # calculate gradient for weight
-            self.dC_dAL = np.array([0.0] * self.numNeurons)
+        # else:
+        #     # calculate gradient for weight
+        #     self.dC_dAL = np.array([0.0] * self.numNeurons)
 
-            for currentLayerNeuronIndex in range(len(self.neurons)):
-
-
-                dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])   # da / dZ
-
-                # dc / dZ   - remains same b/c is input to the current node
-
-                for nextLayerNeuronIndex in range(self.nextLayer.numNeurons):
-                    weight = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex]
-                    self.dC_dAL[currentLayerNeuronIndex] += weight * derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex]) * self.nextLayer.dC_dAL[nextLayerNeuronIndex]
+        #     for currentLayerNeuronIndex in range(len(self.neurons)):
 
 
-                # compute weight derivatives = dZ/dW * da/dZ * dc/dA = a(l-1) * derivSigmoid(ZL) * dc/dA
-                for previousLayerWeightIndex in range(self.previousLayer.numNeurons):
-                    prevNeuron = self.previousLayer.neurons[previousLayerWeightIndex]
-                    derivSig = derivative_sigmoid(self.z[currentLayerNeuronIndex])
-                    self.gradient_weight[currentLayerNeuronIndex][previousLayerWeightIndex] += prevNeuron * derivSig * self.dC_dAL[currentLayerNeuronIndex]
+        #         dSigmoid_ZCurrent = derivative_sigmoid(self.z[currentLayerNeuronIndex])   # da / dZ
+
+        #         # dc / dZ   - remains same b/c is input to the current node
+
+        #         for nextLayerNeuronIndex in range(self.nextLayer.numNeurons):
+        #             weight = self.nextLayer.weights[nextLayerNeuronIndex][currentLayerNeuronIndex]
+        #             self.dC_dAL[currentLayerNeuronIndex] += weight * derivative_sigmoid(self.nextLayer.z[nextLayerNeuronIndex]) * self.nextLayer.dC_dAL[nextLayerNeuronIndex]
+
+
+        #         # compute weight derivatives = dZ/dW * da/dZ * dc/dA = a(l-1) * derivSigmoid(ZL) * dc/dA
+        #         for previousLayerWeightIndex in range(self.previousLayer.numNeurons):
+        #             prevNeuron = self.previousLayer.neurons[previousLayerWeightIndex]
+        #             derivSig = derivative_sigmoid(self.z[currentLayerNeuronIndex])
+        #             self.gradient_weight[currentLayerNeuronIndex][previousLayerWeightIndex] += prevNeuron * derivSig * self.dC_dAL[currentLayerNeuronIndex]
             
 
             
@@ -346,7 +377,7 @@ def main():
 
     batchImageCounter = 0
     batchSize = 10.0            # was 100
-    numBatchesToProcess = 300.0     # was 5
+    numBatchesToProcess = 100.0     # was 5
 
     x = np.array([x] for x in range(0))
     plt.xlim(0, batchSize * numBatchesToProcess)
