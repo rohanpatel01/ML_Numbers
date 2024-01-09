@@ -24,11 +24,12 @@ Issue: vanishing gradient problem?
 """
 
 def sigmoid(x):
-    return (1/(1 + np.exp(-x)))
+    return (1.0/(1.0 + np.exp(-x)))
 
 
 def derivative_sigmoid(x):
-    return (np.exp(-x) / (math.pow((1 + np.exp(-x)), 2)))
+    return sigmoid(x) * (1 - sigmoid(x))
+    # return (np.exp(-x) / (math.pow((1 + np.exp(-x)), 2)))
 
 def reLu(x):
     if x < 0:
@@ -360,9 +361,9 @@ def main():
     
     #^ Note: change btwn one image and all images: add statement to while loop, change what you plot, comment back in the index += 1 instead of "testOneImageIndex"
     
-    # testOneImageIndex = 0
+    testOneImageIndex = 0
     predictionSum = 0.0
-    while ( (index < numTrainingImages) and (index - offset < (numBatchesToProcess * batchSize))   ):      # and (testOneImageIndex < (numBatchesToProcess * batchSize) )
+    while ( (index < numTrainingImages) and (index - offset < (numBatchesToProcess * batchSize)) and (testOneImageIndex < (numBatchesToProcess * batchSize) )  ):      # 
         
         # process image with back and forward propigation
         currentImage = images[index]
@@ -396,7 +397,8 @@ def main():
             numCorrect += 1
 
         #^ plot accuracy
-        plt.plot(index, (numCorrect / (index + 1)), marker="o", markersize=1, markeredgecolor="blue", markerfacecolor="green")
+        # plt.plot(index, (numCorrect / (index + 1)), marker="o", markersize=1, markeredgecolor="blue", markerfacecolor="green")
+        plt.plot(testOneImageIndex, (numCorrect / (testOneImageIndex + 1)), marker="o", markersize=1, markeredgecolor="blue", markerfacecolor="green")
         
         # max_value = layers[1].gradient_weight[0][0]
         # for row in layers[1].gradient_weight:
@@ -425,19 +427,19 @@ def main():
 
         cost = 0.0
         for f in range(layers[-1].numNeurons):
-            cost += math.pow(layers[-1].neurons[f] - expected[f],2)   #^ remove square from cost
-            # cost += layers[-1].neurons[f] - expected[f]
+            # cost += math.pow(layers[-1].neurons[f] - expected[f],2)   #^ remove square from cost
+            cost += layers[-1].neurons[f] - expected[f]
 
 
 
-        plt.plot(index, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
-        # plt.plot(testOneImageIndex, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
+        # plt.plot(index, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
+        plt.plot(testOneImageIndex, cost, marker="o", markersize=1, markeredgecolor="red", markerfacecolor="green")
 
 
         backPropigation()
         
-        index += 1
-        # testOneImageIndex += 1      #^ just to test if the cost is updating or random
+        # index += 1
+        testOneImageIndex += 1      #^ just to test if the cost is updating or random
 
         batchImageCounter += 1
 
@@ -464,7 +466,7 @@ def main():
 
 
 
-                batchImageCounter = 0
+            batchImageCounter = 0
 
 
     # print("Average output: ", predictionSum / index + 1)
